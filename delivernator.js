@@ -13,14 +13,15 @@ window.onload = function () {
   let canvasScores = [];
   let scrollOffset = canvas.height;
 
-  startButton.addEventListener('click', () => {
-    gameStarted = true;
-    startButton.style.display = 'none';
-    startGame();
-  });
-
   function loadScores() {
     return JSON.parse(localStorage.getItem('delivernatorScores') || '[]');
+  }
+
+  function showScores() {
+    const scores = loadScores();
+    canvasScores = scores.map((s, i) =>
+      `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
+    );
   }
 
   function saveScore(scoreObj) {
@@ -31,12 +32,11 @@ window.onload = function () {
     localStorage.setItem('delivernatorScores', JSON.stringify(scores));
   }
 
-  function showScores() {
-    const scores = loadScores();
-    canvasScores = scores.map((s, i) =>
-      `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
-    );
-  }
+  startButton.addEventListener('click', () => {
+    gameStarted = true;
+    startButton.style.display = 'none';
+    startGame();
+  });
 
   function startGame() {
     const TILE = 32;
@@ -219,8 +219,10 @@ window.onload = function () {
       }
     }
 
+    showScores();
     loop();
   }
 
   showScores();
 };
+
