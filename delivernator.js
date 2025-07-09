@@ -13,31 +13,32 @@ window.onload = function () {
   let canvasScores = [];
   let scrollOffset = canvas.height;
 
-const SHEET_API = "https://script.google.com/macros/s/AKfycbw8U2JKTumJOApLnJdQhEibR_GkdFmVqrZaHqAZBRIdzmyS2he7jVPwQybIpd0PJNpQ/exec"; // <-- Paste your Apps Script Web App URL
+  const SHEET_API = "https://script.google.com/macros/s/AKfycbw8U2JKTumJOApLnJdQhEibR_GkdFmVqrZaHqAZBRIdzmyS2he7jVPwQybIpd0PJNpQ/exec";
 
-function loadScores() {
-  return fetch(SHEET_API)
-    .then((res) => res.json())
-    .catch(() => []);
-}
-
-function saveScore(scoreObj) {
-  return fetch(SHEET_API, {
-    method: "POST",
-    body: JSON.stringify(scoreObj),
-    headers: {
-      "Content-Type": "application/json"
+  async function loadScores() {
+    try {
+      const res = await fetch(SHEET_API);
+      return await res.json();
+    } catch {
+      return [];
     }
-  });
-}
-  
-  function showScores() {
-    const scores = loadScores();
+  }
+
+  async function saveScore(scoreObj) {
+    await fetch(SHEET_API, {
+      method: "POST",
+      body: JSON.stringify(scoreObj),
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  async function showScores() {
+    const scores = await loadScores();
     canvasScores = scores.map((s, i) =>
       `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
     );
+    render(); // show immediately if before game start
   }
-
 
   startButton.addEventListener('click', () => {
     gameStarted = true;
@@ -59,24 +60,18 @@ function saveScore(scoreObj) {
       boss: '#ff3333'
     };
 
-    const map = [];
-    for (let y = 0; y < ROWS; y++) {
-      const row = [];
-      for (let x = 0; x < COLS; x++) {
-        row.push(Math.random() < 0.2 ? 'grass' : 'road');
-      }
-      map.push(row);
-    }
+    const map = Array.from({ length: ROWS }, () =>
+      Array.from({ length: COLS }, () => (Math.random() < 0.2 ? 'grass' : 'road'))
+    );
 
     const packages = [];
-    for (let i = 0; i < 5; i++) {
-      let px, py;
-      do {
-        px = Math.floor(Math.random() * COLS);
-        py = Math.floor(Math.random() * ROWS);
-      } while (map[py][px] !== 'road');
-      map[py][px] = 'package';
-      packages.push({ x: px, y: py });
+    while (packages.length < 5) {
+      const px = Math.floor(Math.random() * COLS);
+      const py = Math.floor(Math.random() * ROWS);
+      if (map[py][px] === 'road') {
+        map[py][px] = 'package';
+        packages.push({ x: px, y: py });
+      }
     }
 
     const truck = { x: 2, y: 2, dx: 0, dy: 0 };
@@ -125,15 +120,15 @@ function saveScore(scoreObj) {
       }
     }
 
-    function showGameOver(message, scoreValue) {
+    async function showGameOver(message, scoreValue) {
       gameOver = true;
       endMessage.textContent = message;
       gameOverScreen.style.display = 'block';
 
       if (scoreValue > 0 && message === "All Packages Delivered!") {
         const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
-        saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
-        showScores();
+        await saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
+        await showScores();
       }
     }
 
@@ -189,6 +184,7 @@ function saveScore(scoreObj) {
     }
 
     function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let y = 0; y < ROWS; y++) {
         for (let x = 0; x < COLS; x++) {
           drawTile(map[y][x], x, y);
