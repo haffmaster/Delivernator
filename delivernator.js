@@ -123,9 +123,11 @@ window.onload = function () {
       endMessage.textContent = message;
       gameOverScreen.style.display = 'block';
 
-      const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
-      saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
-      showScores();
+      if (scoreValue > 0 && message === "All Packages Delivered!") {
+        const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
+        saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
+        showScores();
+      }
     }
 
     function update() {
@@ -156,7 +158,7 @@ window.onload = function () {
 
         if (packages.length === 0 && !gameOver) {
           const score = Math.max(0, 10000 - (moves * 10 + elapsed * 20));
-          finalScore.textContent = `\uD83C\uDF1F Score: ${Math.round(score)} (Time: ${elapsed.toFixed(1)}s | Moves: ${moves})`;
+          finalScore.textContent = `🌟 Score: ${Math.round(score)} (Time: ${elapsed.toFixed(1)}s | Moves: ${moves})`;
           showGameOver("All Packages Delivered!", score);
         }
       }
@@ -173,7 +175,7 @@ window.onload = function () {
         }
 
         if (truck.x === boss.x && truck.y === boss.y) {
-          finalScore.textContent = "\uD83D\uDE20 Caught by the supervisor!";
+          finalScore.textContent = "😠 Caught by the supervisor!";
           showGameOver("You Were Caught!", 0);
         }
       }
@@ -194,7 +196,7 @@ window.onload = function () {
       drawTile('truck', truck.x, truck.y);
       if (boss.active) drawTile('boss', boss.x, boss.y);
 
-      if (!gameStarted) {
+      if (!gameStarted && canvasScores.length > 0) {
         ctx.font = "12px monospace";
         ctx.fillStyle = "#aaa";
         scrollOffset -= 0.3;
