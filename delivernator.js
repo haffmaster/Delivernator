@@ -9,10 +9,55 @@ window.onload = function () {
   const endMessage = document.getElementById('endMessage');
   const gameOverScreen = document.getElementById('gameOverScreen');
 
+  const highScoreList = document.createElement('div');
+  highScoreList.id = 'highScores';
+  highScoreList.style.maxHeight = '120px';
+  highScoreList.style.overflow = 'hidden';
+  highScoreList.style.margin = '0 auto';
+  highScoreList.style.width = '400px';
+  highScoreList.style.color = '#fff';
+  highScoreList.style.fontFamily = 'monospace';
+  highScoreList.style.fontSize = '14px';
+  highScoreList.style.padding = '10px';
+  highScoreList.style.whiteSpace = 'pre-line';
+  highScoreList.style.textAlign = 'left';
+  document.body.insertBefore(highScoreList, canvas);
+
   startButton.addEventListener('click', () => {
     startButton.style.display = 'none';
+    highScoreList.style.display = 'none';
     startGame();
   });
+
+  function loadScores() {
+    return JSON.parse(localStorage.getItem('delivernatorScores') || '[]');
+  }
+
+  function saveScore(scoreObj) {
+    let scores = loadScores();
+    scores.push(scoreObj);
+    scores.sort((a, b) => b.score - a.score);
+    if (scores.length > 100) scores = scores.slice(0, 100);
+    localStorage.setItem('delivernatorScores', JSON.stringify(scores));
+  }
+
+  function showScores() {
+    const scores = loadScores();
+    highScoreList.innerHTML = "\ud83c\udfc6 High Scores (Top 100) \ud83c\udfc6\n";
+    scores.forEach((s, i) => {
+      highScoreList.innerHTML += `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)\n`;
+    });
+
+    let scrollY = 0;
+    function scrollScores() {
+      scrollY += 0.5;
+      highScoreList.scrollTop = scrollY;
+      if (scrollY < highScoreList.scrollHeight - highScoreList.clientHeight) {
+        requestAnimationFrame(scrollScores);
+      }
+    }
+    scrollScores();
+  }
 
   function startGame() {
     const TILE = 32;
@@ -94,10 +139,15 @@ window.onload = function () {
       }
     }
 
-    function showGameOver(message) {
+    function showGameOver(message, scoreValue) {
       gameOver = true;
       endMessage.textContent = message;
       gameOverScreen.style.display = 'block';
+
+      const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
+      saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
+      highScoreList.style.display = 'block';
+      showScores();
     }
 
     function update() {
@@ -128,8 +178,8 @@ window.onload = function () {
 
         if (packages.length === 0 && !gameOver) {
           const score = Math.max(0, 10000 - (moves * 10 + elapsed * 20));
-          finalScore.textContent = `🏁 Score: ${Math.round(score)} (Time: ${elapsed.toFixed(1)}s | Moves: ${moves})`;
-          showGameOver("All Packages Delivered!");
+          finalScore.textContent = `\ud83c\udf1f Score: ${Math.round(score)} (Time: ${elapsed.toFixed(1)}s | Moves: ${moves})`;
+          showGameOver("All Packages Delivered!", score);
         }
       }
 
@@ -145,8 +195,8 @@ window.onload = function () {
         }
 
         if (truck.x === boss.x && truck.y === boss.y) {
-          finalScore.textContent = "😡 Caught by the supervisor!";
-          showGameOver("You Were Caught!");
+          finalScore.textContent = "\ud83d\ude20 Caught by the supervisor!";
+          showGameOver("You Were Caught!", 0);
         }
       }
     }
