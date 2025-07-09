@@ -28,15 +28,14 @@ window.onload = function () {
     localStorage.setItem('delivernatorScores', JSON.stringify(scores));
   }
 
-  function showScores() {
-    let canvasScores = [];
-    let scrollOffset = 0;
-    
-    function showScores() {
-      const scores = loadScores();
-      canvasScores = scores.map((s, i) =>
-        `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
-      );
+let canvasScores = [];
+let scrollOffset = 0;
+
+function showScores() {
+  const scores = loadScores();
+  canvasScores = scores.map((s, i) =>
+    `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
+  );
 }
 
   function startGame() {
