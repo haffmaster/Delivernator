@@ -13,10 +13,24 @@ window.onload = function () {
   let canvasScores = [];
   let scrollOffset = canvas.height;
 
-  function loadScores() {
-    return JSON.parse(localStorage.getItem('delivernatorScores') || '[]');
-  }
+const SHEET_API = "https://script.google.com/macros/s/AKfycbw8U2JKTumJOApLnJdQhEibR_GkdFmVqrZaHqAZBRIdzmyS2he7jVPwQybIpd0PJNpQ/exec"; // <-- Paste your Apps Script Web App URL
 
+function loadScores() {
+  return fetch(SHEET_API)
+    .then((res) => res.json())
+    .catch(() => []);
+}
+
+function saveScore(scoreObj) {
+  return fetch(SHEET_API, {
+    method: "POST",
+    body: JSON.stringify(scoreObj),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+}
+  
   function showScores() {
     const scores = loadScores();
     canvasScores = scores.map((s, i) =>
@@ -24,13 +38,6 @@ window.onload = function () {
     );
   }
 
-  function saveScore(scoreObj) {
-    let scores = loadScores();
-    scores.push(scoreObj);
-    scores.sort((a, b) => b.score - a.score);
-    if (scores.length > 100) scores = scores.slice(0, 100);
-    localStorage.setItem('delivernatorScores', JSON.stringify(scores));
-  }
 
   startButton.addEventListener('click', () => {
     gameStarted = true;
