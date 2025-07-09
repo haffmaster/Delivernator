@@ -9,10 +9,13 @@ window.onload = function () {
   const endMessage = document.getElementById('endMessage');
   const gameOverScreen = document.getElementById('gameOverScreen');
 
+  let gameStarted = false;
+  let canvasScores = [];
+  let scrollOffset = canvas.height;
+
   startButton.addEventListener('click', () => {
     gameStarted = true;
     startButton.style.display = 'none';
-    highScoreList.style.display = 'none';
     startGame();
   });
 
@@ -28,15 +31,12 @@ window.onload = function () {
     localStorage.setItem('delivernatorScores', JSON.stringify(scores));
   }
 
-let canvasScores = [];
-let scrollOffset = 0;
-
-function showScores() {
-  const scores = loadScores();
-  canvasScores = scores.map((s, i) =>
-    `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
-  );
-}
+  function showScores() {
+    const scores = loadScores();
+    canvasScores = scores.map((s, i) =>
+      `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
+    );
+  }
 
   function startGame() {
     const TILE = 32;
@@ -119,24 +119,13 @@ function showScores() {
     }
 
     function showGameOver(message, scoreValue) {
-gameOver = true;
-  endMessage.textContent = message;
-  gameOverScreen.style.display = 'block';
+      gameOver = true;
+      endMessage.textContent = message;
+      gameOverScreen.style.display = 'block';
 
-  // 🧠 Load current high scores
-  let scores = loadScores();
-
-  // ✅ Only prompt for initials if this score qualifies for Top 100
-  const qualifies = scores.length < 100 || scoreValue > scores[scores.length - 1].score;
-
-  if (scoreValue > 0 && qualifies) {
-    const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
-    saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
-  }
-
-  // 🎯 Always show the board (even if no initials)
-  highScoreList.style.display = 'block';
-  showScores();
+      const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
+      saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
+      showScores();
     }
 
     function update() {
@@ -167,7 +156,7 @@ gameOver = true;
 
         if (packages.length === 0 && !gameOver) {
           const score = Math.max(0, 10000 - (moves * 10 + elapsed * 20));
-          finalScore.textContent = `\ud83c\udf1f Score: ${Math.round(score)} (Time: ${elapsed.toFixed(1)}s | Moves: ${moves})`;
+          finalScore.textContent = `\uD83C\uDF1F Score: ${Math.round(score)} (Time: ${elapsed.toFixed(1)}s | Moves: ${moves})`;
           showGameOver("All Packages Delivered!", score);
         }
       }
@@ -184,7 +173,7 @@ gameOver = true;
         }
 
         if (truck.x === boss.x && truck.y === boss.y) {
-          finalScore.textContent = "\ud83d\ude20 Caught by the supervisor!";
+          finalScore.textContent = "\uD83D\uDE20 Caught by the supervisor!";
           showGameOver("You Were Caught!", 0);
         }
       }
@@ -204,16 +193,17 @@ gameOver = true;
 
       drawTile('truck', truck.x, truck.y);
       if (boss.active) drawTile('boss', boss.x, boss.y);
-              if (!gameStarted) {
-          ctx.font = "12px monospace";
-          ctx.fillStyle = "#aaa";
-          scrollOffset -= 0.3; // slow scroll
-          if (scrollOffset < -canvasScores.length * 18) scrollOffset = canvas.height;
-        
-          for (let i = 0; i < canvasScores.length; i++) {
-            ctx.fillText(canvasScores[i], 40, scrollOffset + i * 18);
-          }
+
+      if (!gameStarted) {
+        ctx.font = "12px monospace";
+        ctx.fillStyle = "#aaa";
+        scrollOffset -= 0.3;
+        if (scrollOffset < -canvasScores.length * 18) scrollOffset = canvas.height;
+
+        for (let i = 0; i < canvasScores.length; i++) {
+          ctx.fillText(canvasScores[i], 40, scrollOffset + i * 18);
         }
+      }
     }
 
     function loop() {
@@ -229,4 +219,6 @@ gameOver = true;
 
     loop();
   }
+
+  showScores();
 };
