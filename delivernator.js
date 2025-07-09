@@ -9,21 +9,8 @@ window.onload = function () {
   const endMessage = document.getElementById('endMessage');
   const gameOverScreen = document.getElementById('gameOverScreen');
 
-  const highScoreList = document.createElement('div');
-  highScoreList.id = 'highScores';
-  highScoreList.style.maxHeight = '120px';
-  highScoreList.style.overflow = 'hidden';
-  highScoreList.style.margin = '0 auto';
-  highScoreList.style.width = '400px';
-  highScoreList.style.color = '#fff';
-  highScoreList.style.fontFamily = 'monospace';
-  highScoreList.style.fontSize = '14px';
-  highScoreList.style.padding = '10px';
-  highScoreList.style.whiteSpace = 'pre-line';
-  highScoreList.style.textAlign = 'left';
-  document.body.insertBefore(highScoreList, canvas);
-
   startButton.addEventListener('click', () => {
+    gameStarted = true;
     startButton.style.display = 'none';
     highScoreList.style.display = 'none';
     startGame();
@@ -42,22 +29,15 @@ window.onload = function () {
   }
 
   function showScores() {
-    const scores = loadScores();
-    highScoreList.innerHTML = "\ud83c\udfc6 High Scores (Top 100) \ud83c\udfc6\n";
-    scores.forEach((s, i) => {
-      highScoreList.innerHTML += `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)\n`;
-    });
-
-    let scrollY = 0;
-    function scrollScores() {
-      scrollY += 0.5;
-      highScoreList.scrollTop = scrollY;
-      if (scrollY < highScoreList.scrollHeight - highScoreList.clientHeight) {
-        requestAnimationFrame(scrollScores);
-      }
-    }
-    scrollScores();
-  }
+    let canvasScores = [];
+    let scrollOffset = 0;
+    
+    function showScores() {
+      const scores = loadScores();
+      canvasScores = scores.map((s, i) =>
+        `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
+      );
+}
 
   function startGame() {
     const TILE = 32;
@@ -225,6 +205,16 @@ gameOver = true;
 
       drawTile('truck', truck.x, truck.y);
       if (boss.active) drawTile('boss', boss.x, boss.y);
+              if (!gameStarted) {
+          ctx.font = "12px monospace";
+          ctx.fillStyle = "#aaa";
+          scrollOffset -= 0.3; // slow scroll
+          if (scrollOffset < -canvasScores.length * 18) scrollOffset = canvas.height;
+        
+          for (let i = 0; i < canvasScores.length; i++) {
+            ctx.fillText(canvasScores[i], 40, scrollOffset + i * 18);
+          }
+        }
     }
 
     function loop() {
