@@ -140,14 +140,24 @@ window.onload = function () {
     }
 
     function showGameOver(message, scoreValue) {
-      gameOver = true;
-      endMessage.textContent = message;
-      gameOverScreen.style.display = 'block';
+gameOver = true;
+  endMessage.textContent = message;
+  gameOverScreen.style.display = 'block';
 
-      const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
-      saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
-      highScoreList.style.display = 'block';
-      showScores();
+  // 🧠 Load current high scores
+  let scores = loadScores();
+
+  // ✅ Only prompt for initials if this score qualifies for Top 100
+  const qualifies = scores.length < 100 || scoreValue > scores[scores.length - 1].score;
+
+  if (scoreValue > 0 && qualifies) {
+    const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
+    saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
+  }
+
+  // 🎯 Always show the board (even if no initials)
+  highScoreList.style.display = 'block';
+  showScores();
     }
 
     function update() {
