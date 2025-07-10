@@ -4,10 +4,11 @@ firebase.initializeApp({
   projectId: "delivanator",
   storageBucket: "delivanator.firebasestorage.app",
   messagingSenderId: "336594634961",
-  appId: "1:336594634961:web:207cc562a5944e10cc1df0"
+  appId: "1:336594634961:web:207cc562a5944e10cc1df0",
+  databaseURL: "https://delivanator-default-rtdb.firebaseio.com"  // 🔑 Required for Realtime DB
 });
 
-const db = firebase.firestore();
+const db = firebase.database();
 
 window.onload = function () {
   const canvas = document.getElementById('game');
@@ -28,12 +29,14 @@ window.onload = function () {
 
 async function loadScores() {
   try {
-    const snapshot = await db.collection("highscores")
-      .orderBy("score", "desc")
-      .limit(10)
-      .get();
+    const snapshot = await db.ref("highscores").orderByChild("score").limitToLast(10).once("value");
+    const scores = [];
+    snapshot.forEach(childSnapshot => {
+      scores.push(childSnapshot.val());
+    });
 
-    return snapshot.docs.map(doc => doc.data());
+    // Order descending since Firebase returns ascending
+    return scores.sort((a, b) => b.score - a.score);
   } catch (e) {
     console.error("Error loading scores:", e);
     return [];
@@ -42,7 +45,7 @@ async function loadScores() {
 
 async function saveScore(scoreObj) {
   try {
-    await db.collection("highscores").add(scoreObj);
+    await db.ref("highscores").push(scoreObj);
   } catch (e) {
     console.error("Error saving score:", e);
   }
