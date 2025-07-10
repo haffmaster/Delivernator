@@ -1,13 +1,14 @@
 firebase.initializeApp({
   apiKey: "AIzaSyDT3l9saup8n1EaPjgwCC0fBeLA5tiBF_4",
   authDomain: "delivanator.firebaseapp.com",
+  databaseURL: "https://delivanator-default-rtdb.firebaseio.com",
   projectId: "delivanator",
-  storageBucket: "delivanator.firebasestorage.app",
+  storageBucket: "delivanator.appspot.com",
   messagingSenderId: "336594634961",
-  appId: "1:336594634961:web:207cc562a5944e10cc1df0",
-  databaseURL: "https://delivanator-default-rtdb.firebaseio.com"  // 🔑 Required for Realtime DB
+  appId: "1:336594634961:web:207cc562a5944e10cc1df0"
 });
 
+// Reference to the database
 const db = firebase.database();
 
 window.onload = function () {
