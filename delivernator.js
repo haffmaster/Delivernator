@@ -28,27 +28,26 @@ window.onload = function () {
 
   const SHEET_API = "https://script.google.com/macros/s/AKfycbw8U2JKTumJOApLnJdQhEibR_GkdFmVqrZaHqAZBRIdzmyS2he7jVPwQybIpd0PJNpQ/exec";
 
-async function loadScores() {
+async function saveScore(scoreObj) {
   try {
-    const snapshot = await db.ref("highscores").orderByChild("score").limitToLast(10).once("value");
-    const scores = [];
-    snapshot.forEach(childSnapshot => {
-      scores.push(childSnapshot.val());
-    });
-
-    // Order descending since Firebase returns ascending
-    return scores.sort((a, b) => b.score - a.score);
+    const newRef = db.ref("highscores").push();
+    await newRef.set(scoreObj);
   } catch (e) {
-    console.error("Error loading scores:", e);
-    return [];
+    console.error("Error saving score:", e);
   }
 }
 
-async function saveScore(scoreObj) {
+async function loadScores() {
   try {
-    await db.ref("highscores").push(scoreObj);
+    const snapshot = await db.ref("highscores").orderByChild("score").once("value");
+    const scores = [];
+    snapshot.forEach(child => {
+      scores.unshift(child.val()); // reverse to get highest first
+    });
+    return scores.slice(0, 10); // top 10
   } catch (e) {
-    console.error("Error saving score:", e);
+    console.error("Error loading scores:", e);
+    return [];
   }
 }
 
