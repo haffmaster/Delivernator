@@ -13,9 +13,6 @@ window.onload = function () {
   let canvasScores = [];
   let scrollOffset = canvas.height;
 
-}
-
-  
   startButton.addEventListener('click', () => {
     gameStarted = true;
     startButton.style.display = 'none';
@@ -101,7 +98,7 @@ window.onload = function () {
       endMessage.textContent = message;
       gameOverScreen.style.display = 'block';
 
-      }
+      // Placeholder for score saving logic if needed
     }
 
     function update() {
@@ -194,10 +191,14 @@ window.onload = function () {
       }
     }
 
-    showScores();
+    // Placeholder call until score system is set up
+    function showScores() {
+      canvasScores = [];
+    }
+
+
     loop();
   }
 
-  showScores();
 };
 
