@@ -15,22 +15,30 @@ window.onload = function () {
 
   const SHEET_API = "https://script.google.com/macros/s/AKfycbw8U2JKTumJOApLnJdQhEibR_GkdFmVqrZaHqAZBRIdzmyS2he7jVPwQybIpd0PJNpQ/exec";
 
-  async function loadScores() {
-    try {
-      const res = await fetch(SHEET_API);
-      return await res.json();
-    } catch {
-      return [];
-    }
+async function loadScores() {
+  try {
+    const res = await fetch(SHEET_API);
+    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.error("Error loading scores:", e);
+    return [];
   }
-
-  async function saveScore(scoreObj) {
-    await fetch(SHEET_API, {
+}
+async function saveScore(scoreObj) {
+  try {
+    const res = await fetch(SHEET_API, {
       method: "POST",
       body: JSON.stringify(scoreObj),
       headers: { "Content-Type": "application/json" }
     });
+    if (!res.ok) {
+      console.error("Failed to save score:", res.statusText);
+    }
+  } catch (e) {
+    console.error("Error saving score:", e);
   }
+}
 
   async function showScores() {
     const scores = await loadScores();
