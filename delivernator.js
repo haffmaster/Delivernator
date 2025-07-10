@@ -40,14 +40,18 @@ async function saveScore(scoreObj) {
   }
 }
 
-  async function showScores() {
-    const scores = await loadScores();
-    canvasScores = scores.map((s, i) =>
-      `${i + 1}. ${s.initials.padEnd(3)} - ${s.score.toString().padStart(5)} (Moves: ${s.moves}, Time: ${s.time.toFixed(1)}s)`
-    );
-    render(); // show immediately if before game start
-  }
-
+async function showScores() {
+  const scores = await loadScores();
+  canvasScores = scores.map((s, i) => {
+    const initials = s.initials || '???';
+    const score = typeof s.score === 'number' ? s.score : 0;
+    const moves = typeof s.moves === 'number' ? s.moves : 0;
+    const time = typeof s.time === 'number' ? s.time.toFixed(1) : '0.0';
+    return `${i + 1}. ${initials.padEnd(3)} - ${score.toString().padStart(5)} (Moves: ${moves}, Time: ${time}s)`;
+  });
+  if (typeof render === 'function') render(); // only call if render is ready
+}
+  
   startButton.addEventListener('click', () => {
     gameStarted = true;
     startButton.style.display = 'none';
