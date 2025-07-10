@@ -1,16 +1,3 @@
-firebase.initializeApp({
-  apiKey: "AIzaSyDT3l9saup8n1EaPjgwCC0fBeLA5tiBF_4",
-  authDomain: "delivanator.firebaseapp.com",
-  databaseURL: "https://delivanator-default-rtdb.firebaseio.com",
-  projectId: "delivanator",
-  storageBucket: "delivanator.appspot.com",
-  messagingSenderId: "336594634961",
-  appId: "1:336594634961:web:207cc562a5944e10cc1df0"
-});
-
-// Reference to the database
-const db = firebase.database();
-
 window.onload = function () {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -26,42 +13,8 @@ window.onload = function () {
   let canvasScores = [];
   let scrollOffset = canvas.height;
 
-  const SHEET_API = "https://script.google.com/macros/s/AKfycbw8U2JKTumJOApLnJdQhEibR_GkdFmVqrZaHqAZBRIdzmyS2he7jVPwQybIpd0PJNpQ/exec";
-
-async function saveScore(scoreObj) {
-  try {
-    const newRef = db.ref("highscores").push();
-    await newRef.set(scoreObj);
-  } catch (e) {
-    console.error("Error saving score:", e);
-  }
 }
 
-async function loadScores() {
-  try {
-    const snapshot = await db.ref("highscores").orderByChild("score").once("value");
-    const scores = [];
-    snapshot.forEach(child => {
-      scores.unshift(child.val()); // reverse to get highest first
-    });
-    return scores.slice(0, 10); // top 10
-  } catch (e) {
-    console.error("Error loading scores:", e);
-    return [];
-  }
-}
-
-async function showScores() {
-  const scores = await loadScores();
-  canvasScores = scores.map((s, i) => {
-    const initials = s.initials || '???';
-    const score = typeof s.score === 'number' ? s.score : 0;
-    const moves = typeof s.moves === 'number' ? s.moves : 0;
-    const time = typeof s.time === 'number' ? s.time.toFixed(1) : '0.0';
-    return `${i + 1}. ${initials.padEnd(3)} - ${score.toString().padStart(5)} (Moves: ${moves}, Time: ${time}s)`;
-  });
-  if (typeof render === 'function') render(); // only call if render is ready
-}
   
   startButton.addEventListener('click', () => {
     gameStarted = true;
@@ -148,10 +101,6 @@ async function showScores() {
       endMessage.textContent = message;
       gameOverScreen.style.display = 'block';
 
-      if (scoreValue > 0 && message === "All Packages Delivered!") {
-        const initials = prompt("New High Score! Enter your initials (3 letters):", "UPS") || "???";
-        await saveScore({ initials: initials.substring(0, 3).toUpperCase(), score: scoreValue, moves, time: elapsed });
-        await showScores();
       }
     }
 
