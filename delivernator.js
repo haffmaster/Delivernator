@@ -1,3 +1,14 @@
+firebase.initializeApp({
+  apiKey: "AIzaSyDT3l9saup8n1EaPjgwCC0fBeLA5tiBF_4",
+  authDomain: "delivanator.firebaseapp.com",
+  projectId: "delivanator",
+  storageBucket: "delivanator.firebasestorage.app",
+  messagingSenderId: "336594634961",
+  appId: "1:336594634961:web:207cc562a5944e10cc1df0"
+});
+
+const db = firebase.firestore();
+
 window.onload = function () {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -17,24 +28,21 @@ window.onload = function () {
 
 async function loadScores() {
   try {
-    const res = await fetch(SHEET_API);
-    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-    return await res.json();
+    const snapshot = await db.collection("highscores")
+      .orderBy("score", "desc")
+      .limit(10)
+      .get();
+
+    return snapshot.docs.map(doc => doc.data());
   } catch (e) {
     console.error("Error loading scores:", e);
     return [];
   }
 }
+
 async function saveScore(scoreObj) {
   try {
-    const res = await fetch(SHEET_API, {
-      method: "POST",
-      body: JSON.stringify(scoreObj),
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!res.ok) {
-      console.error("Failed to save score:", res.statusText);
-    }
+    await db.collection("highscores").add(scoreObj);
   } catch (e) {
     console.error("Error saving score:", e);
   }
